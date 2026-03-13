@@ -1,0 +1,9 @@
+[accounts]
+admin = "hunter2"
+
+[mount."/"]
+real = "/home/tizu/Development/Nextest/testing"
+
+[mount."/own"]
+real = "/home/tizu/Development/Nextest/testing/own"
+user-local = true

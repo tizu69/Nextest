@@ -1,0 +1,98 @@
+<!doctype html>
+<html>
+	<head>
+		<title>Nextest: Log in</title>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+	</head>
+	<body>
+		{{template "style"}}
+		<main>
+			<h1>Log in to Nextest</h1>
+			<p>
+				You are about to authenticate <b>{{.UA}}</b> with access to your
+				Nextest account, along with all the files you have access to. If
+				you did not initiate a log-in process, please close this tab.
+			</p>
+			<form method="post">
+				<input type="hidden" name="token" value="{{.Token}}" />
+				<input
+					type="text"
+					name="username"
+					placeholder="Username"
+					autocomplete="username"
+					value="{{.User}}"
+					required
+				/>
+				<input
+					type="password"
+					name="password"
+					placeholder="Password"
+					autocomplete="current-password"
+					required
+				/>
+				<input type="submit" value="Log in" />
+			</form>
+			{{if .Error}}
+			<p class="error">{{.Error}}</p>
+			{{end}}
+		</main>
+	</body>
+</html>
+
+{{define "style"}}
+<style>
+	body {
+		background: #222226;
+		color: #fefefe;
+		font-family: sans-serif;
+		margin: 0;
+		font-size: 18px;
+	}
+
+	main {
+		padding: 1rem;
+		max-width: 40rem;
+		margin: 0 auto;
+		display: flex;
+		flex-direction: column;
+		gap: 1rem;
+		justify-content: center;
+		align-items: center;
+		min-height: calc(100dvh - 2rem);
+	}
+
+	h1 {
+		margin-top: 0;
+		margin-bottom: 0;
+	}
+
+	form {
+		display: flex;
+		gap: 1rem;
+	}
+
+	input {
+		padding: 0.5rem 1rem;
+		width: 100%;
+		background: #38383b;
+		color: #fefefe;
+		border-radius: 0.25rem;
+		border: none;
+	}
+
+	input::placeholder {
+		color: #aaaaaa;
+	}
+
+	input[type="submit"] {
+		background: #3584e4;
+		cursor: pointer;
+		width: fit-content;
+	}
+
+	.error {
+		color: #f66151;
+	}
+</style>
+{{end}}
