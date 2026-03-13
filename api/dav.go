@@ -9,10 +9,9 @@ import (
 	"golang.org/x/net/webdav"
 )
 
-func (a *API) WebDAV(w http.ResponseWriter, r *http.Request) {
+func (a *API) RouteWebDAV(w http.ResponseWriter, r *http.Request) {
 	user := a.RequireAuth(w, r)
 	if user == "" {
-		w.Header().Set("www-authenticate", `Basic realm="Nextcloud", charset="UTF-8"`)
 		w.WriteHeader(401)
 		return
 	}
