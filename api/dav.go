@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+	"log/slog"
 	"net/http"
 	"os"
 
@@ -16,6 +17,14 @@ func (a *API) RouteWebDAV(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	r = r.WithContext(context.WithValue(r.Context(), ctxAuthedUser{}, user))
+
+	// Nextcloud client sends a HEAD request to /remote.php/dav/~/ on log-in,
+	// which the go webdav server will politely 405 Method Not Allowed on.
+	if r.URL.Path == "/remote.php/dav/files/~/" && r.Method == "HEAD" {
+		w.WriteHeader(200)
+		return
+	}
+
 	a.dav.ServeHTTP(w, r)
 }
 
@@ -47,6 +56,7 @@ func (fs *DavFS) OpenFile(ctx context.Context, name string, flag int, perm os.Fi
 	if err != nil {
 		return nil, err
 	}
+	slog.Info("opening file", "path", path, "flag", flag, "perm", perm, "user", ctxAuthedUserGet(ctx), "name", name)
 	return os.OpenFile(path, flag, perm)
 }
 
@@ -75,5 +85,6 @@ func (fs *DavFS) Stat(ctx context.Context, name string) (os.FileInfo, error) {
 	if err != nil {
 		return nil, err
 	}
+	slog.Info("stat", "path", path, "user", ctxAuthedUserGet(ctx), "name", name)
 	return os.Stat(path)
 }

@@ -139,7 +139,7 @@ func (a *API) RouteGetUser(w http.ResponseWriter, r *http.Request) {
 				Displayname:         user,
 				DisplayName:         user,
 				Groups:              []string{},
-				ID:                  user,
+				ID:                  "~", // this seems to be used for the webdav path only
 				Language:            "en",
 				Locale:              "us",
 				Quota:               ocsQuota{},

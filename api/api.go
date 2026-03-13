@@ -1,7 +1,6 @@
 package api
 
 import (
-	"log/slog"
 	"net/http"
 
 	"g.tizu.dev/Nextest/config"
@@ -19,7 +18,7 @@ type API struct {
 func NewAPI(cfg *config.Config) *API {
 	a := &API{Config: cfg}
 	a.dav = &webdav.Handler{
-		Prefix:     "/remote.php/dav",
+		Prefix:     "/remote.php/dav/files/~",
 		FileSystem: NewDavFS(a.Config),
 		LockSystem: webdav.NewMemLS(),
 	}
@@ -32,20 +31,12 @@ func (a *API) Routes() http.Handler {
 	mux := chi.NewMux()
 	mux.Use(middleware.Logger)
 	mux.Use(middleware.Compress(5))
-	mux.Use(func(next http.Handler) http.Handler {
-		fn := func(w http.ResponseWriter, r *http.Request) {
-			prw := newPeekRW(w)
-			next.ServeHTTP(prw, r)
-			slog.Info("responded", "with", string(prw.Peek()))
-		}
-		return http.HandlerFunc(fn)
-	})
 	mux.Use(middleware.RealIP)
 	mux.Use(middleware.Recoverer)
 
 	mux.Get("/status.php", a.RouteGetStatus)
 	mux.HandleFunc("/remote.php/dav", a.RouteWebDAV)
-	mux.HandleFunc("/remote.php/dav/", a.RouteWebDAV)
+	mux.HandleFunc("/remote.php/dav/*", a.RouteWebDAV)
 	mux.Post("/index.php/login/v2", a.RouteLogin)
 	mux.Get("/index.php/login/v2/{token}", a.RouteLoginFlow)
 	mux.Post("/index.php/login/v2/{token}", a.RouteLoginFlowTry)
