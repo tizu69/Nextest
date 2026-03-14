@@ -12,3 +12,16 @@ memory, and is somewhat slow (from my experience). I wanted something that was
 simpler to set up and can run on a Raspberry Pi. I also wanted something that is
 compatible with the Nextcloud API (OCS), so that I can use existing Nextcloud
 apps for sync.
+
+## Tested clients
+
+If you are using this, please let me know what devices you are using it on and
+whether it works or not.
+
+- [x] Android (Dev)
+- [ ] Android
+- [ ] iOS
+- [ ] Desktop (Linux)
+- [ ] Desktop (Windows)
+- [ ] Desktop (MacOS)
+- [ ] GNOME Integration
