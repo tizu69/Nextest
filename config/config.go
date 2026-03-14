@@ -40,17 +40,38 @@ type Mount struct {
 }
 
 func (m Mounts) Real(path, user string) (string, error) {
+	if path == "" {
+		return "", os.ErrNotExist
+	}
+	path = filepath.Clean(path)
+	if !strings.HasPrefix(path, "/") {
+		path = "/" + path
+	}
+
 	parts := strings.Split(path, "/")
 	for i := len(parts); i > 0; i-- {
-		if mount, ok := m[strings.Join(parts[:i], "/")]; ok {
-			if mount.UserLocal {
-				if user == "" {
-					return "", os.ErrNotExist
-				}
-				return filepath.Join(mount.Real, user), nil
-			}
-			return mount.Real, nil
+		key := strings.Join(parts[:i], "/")
+		if key == "" {
+			key = "/"
 		}
+		mount, ok := m[key]
+		if !ok {
+			continue
+		}
+
+		base := mount.Real
+		if mount.UserLocal {
+			if user == "" {
+				return "", os.ErrNotExist
+			}
+			base = filepath.Join(base, user)
+		}
+
+		rest := strings.Join(parts[i:], "/")
+		if rest == "" {
+			return base, nil
+		}
+		return filepath.Join(base, rest), nil
 	}
 	return "", os.ErrNotExist
 }
