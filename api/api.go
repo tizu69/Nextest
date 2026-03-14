@@ -38,6 +38,12 @@ func (a *API) Routes() http.Handler {
 	mux.Get("/index.php/login/v2/done", a.RouteLoginFlowDone)
 	mux.Post("/index.php/login/v2/{token}/poll", a.RouteLoginFlowPoll)
 	mux.Get("/ocs/v2.php/cloud/user", a.RouteGetUser)
+	mux.Get("/ocs/v2.php/cloud/capabilities", a.RouteGetCapabilities)
+	mux.Get("/ocs/v2.php/apps/user_status/api/v1/predefined_statuses", a.RoutePredefinedStatuses)
+
+	// NC Android uses this endpoint to check if the client has internet access.
+	mux.Get("/index.php/204", func(w http.ResponseWriter, r *http.Request) { w.WriteHeader(204) })
+
 	return mux
 }
 

@@ -148,3 +148,53 @@ func (a *API) RouteGetUser(w http.ResponseWriter, r *http.Request) {
 		},
 	})
 }
+
+type ocsCapabilities struct {
+	Version      ocsCapabilitiesVersion `json:"version" xml:"version"`
+	Capabilities map[string]any         `json:"capabilities" xml:"capabilities"`
+}
+
+type ocsCapabilitiesVersion struct {
+	Major           int    `json:"major" xml:"major"`
+	Minor           int    `json:"minor" xml:"minor"`
+	Micro           int    `json:"micro" xml:"micro"`
+	String          string `json:"string" xml:"string"`
+	Edition         string `json:"edition" xml:"edition"`
+	ExtendedSupport bool   `json:"extendedSupport" xml:"extendedSupport"`
+}
+
+func (a *API) RouteGetCapabilities(w http.ResponseWriter, r *http.Request) {
+	render.JSON(w, r, ocsResponse{
+		ocsResp{
+			Meta: ocsMeta{Status: "ok", Msg: "OK", Code: 200},
+			Data: ocsCapabilities{
+				Version: ocsCapabilitiesVersion{
+					Major:           0,
+					Minor:           0,
+					Micro:           1,
+					String:          "0.0.1",
+					Edition:         "",
+					ExtendedSupport: false,
+				},
+				Capabilities: map[string]any{
+					"core": map[string]any{
+						"pollinterval":        60,
+						"webdav-root":         "remote.php/webdav",
+						"reference-api":       true,
+						"reference-regex":     "(\\s|\\n|^)(https?:\\/\\/)([-A-Z0-9+_.]+(?::[0-9]+)?(?:\\/[-A-Z0-9+&@#%?=~_|!:,.;()]*)*)(\\s|\\n|$)",
+						"mod-rewrite-working": false,
+					},
+				},
+			},
+		},
+	})
+}
+
+func (a *API) RoutePredefinedStatuses(w http.ResponseWriter, r *http.Request) {
+	render.JSON(w, r, ocsResponse{
+		ocsResp{
+			Meta: ocsMeta{Status: "ok", Msg: "OK", Code: 200},
+			Data: []int{},
+		},
+	})
+}
