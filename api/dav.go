@@ -2,15 +2,11 @@ package api
 
 import (
 	"context"
-	"encoding/xml"
-	"errors"
 	"log/slog"
 	"net/http"
 	"os"
-	"time"
 
 	"g.tizu.dev/Nextest/config"
-	"github.com/djherbis/times"
 	"github.com/go-chi/chi/v5"
 	"golang.org/x/net/webdav"
 )
@@ -118,40 +114,4 @@ func (fs *DavFS) Stat(ctx context.Context, name string) (os.FileInfo, error) {
 		return nil, err
 	}
 	return os.Stat(path)
-}
-
-type davFile struct {
-	*os.File
-}
-
-var (
-	_ webdav.File            = (*davFile)(nil)
-	_ webdav.DeadPropsHolder = (*davFile)(nil)
-)
-
-func (f *davFile) DeadProps() (map[xml.Name]webdav.Property, error) {
-	var (
-		xmlName    xml.Name
-		property   webdav.Property
-		properties = make(map[xml.Name]webdav.Property)
-	)
-
-	stat, err1 := f.Stat()
-	times, err2 := times.StatFile(f.File)
-	if err := errors.Join(err1, err2); err != nil {
-		return nil, err
-	}
-
-	xmlName.Space = "DAV:"
-	xmlName.Local = "creationdate"
-	property.XMLName = xmlName
-	property.InnerXML = []byte(times.BirthTime().Format(time.RFC3339))
-	properties[xmlName] = property
-
-	_ = stat
-	return properties, nil
-}
-
-func (f *davFile) Patch([]webdav.Proppatch) ([]webdav.Propstat, error) {
-	return nil, nil
 }
