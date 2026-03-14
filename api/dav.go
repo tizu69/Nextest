@@ -35,12 +35,15 @@ func (a *API) RouteWebDAV(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	user := a.RequireAuth(w, r)
-	if user == "" {
-		w.WriteHeader(401)
+	// GNOME sends OPTIONS to verify the server is WebDAV-compatible, without
+	// sending credentials. That would 401, so we handle it here.
+	if r.URL.Path == "/remote.php/webdav/" && r.Method == "OPTIONS" {
+		w.WriteHeader(204)
+		w.Header().Set("Allow", "OPTIONS, LOCK, PUT, MKCOL")
+		w.Header().Set("DAV", "1, 2")
+		w.Header().Set("MS-Author-Via", "DAV")
 		return
 	}
-	r = r.WithContext(context.WithValue(r.Context(), ctxAuthedUser{}, user))
 
 	// Nextcloud client sends a HEAD request to /remote.php/dav/~/ on log-in,
 	// which the go webdav server will politely 405 Method Not Allowed on, as
@@ -50,6 +53,13 @@ func (a *API) RouteWebDAV(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(200)
 		return
 	}
+
+	user := a.RequireAuth(w, r)
+	if user == "" {
+		w.WriteHeader(401)
+		return
+	}
+	r = r.WithContext(context.WithValue(r.Context(), ctxAuthedUser{}, user))
 
 	a.dav.ServeHTTP(w, r)
 }
@@ -70,7 +80,7 @@ func ctxAuthedUserGet(ctx context.Context) string {
 }
 
 func (f *DavFS) Mkdir(ctx context.Context, name string, perm os.FileMode) error {
-	path, err := f.Config.Mount.Real(name, ctxAuthedUserGet(ctx))
+	path, _, err := f.Config.Mount.Real(name, ctxAuthedUserGet(ctx))
 	if err != nil {
 		return err
 	}
@@ -78,8 +88,7 @@ func (f *DavFS) Mkdir(ctx context.Context, name string, perm os.FileMode) error 
 }
 
 func (fs *DavFS) OpenFile(ctx context.Context, name string, flag int, perm os.FileMode) (webdav.File, error) {
-	path, err := fs.Config.Mount.Real(name, ctxAuthedUserGet(ctx))
-	slog.Info("opening file", "path", path, "flag", flag, "perm", perm, "user", ctxAuthedUserGet(ctx), "name", name)
+	path, _, err := fs.Config.Mount.Real(name, ctxAuthedUserGet(ctx))
 	if err != nil {
 		return nil, err
 	}
@@ -88,7 +97,7 @@ func (fs *DavFS) OpenFile(ctx context.Context, name string, flag int, perm os.Fi
 }
 
 func (fs *DavFS) RemoveAll(ctx context.Context, name string) error {
-	path, err := fs.Config.Mount.Real(name, ctxAuthedUserGet(ctx))
+	path, _, err := fs.Config.Mount.Real(name, ctxAuthedUserGet(ctx))
 	if err != nil {
 		return err
 	}
@@ -96,11 +105,11 @@ func (fs *DavFS) RemoveAll(ctx context.Context, name string) error {
 }
 
 func (fs *DavFS) Rename(ctx context.Context, oldName, newName string) error {
-	oldPath, err := fs.Config.Mount.Real(oldName, ctxAuthedUserGet(ctx))
+	oldPath, _, err := fs.Config.Mount.Real(oldName, ctxAuthedUserGet(ctx))
 	if err != nil {
 		return err
 	}
-	newPath, err := fs.Config.Mount.Real(newName, ctxAuthedUserGet(ctx))
+	newPath, _, err := fs.Config.Mount.Real(newName, ctxAuthedUserGet(ctx))
 	if err != nil {
 		return err
 	}
@@ -108,8 +117,7 @@ func (fs *DavFS) Rename(ctx context.Context, oldName, newName string) error {
 }
 
 func (fs *DavFS) Stat(ctx context.Context, name string) (os.FileInfo, error) {
-	path, err := fs.Config.Mount.Real(name, ctxAuthedUserGet(ctx))
-	slog.Info("stat", "path", path, "user", ctxAuthedUserGet(ctx), "name", name)
+	path, _, err := fs.Config.Mount.Real(name, ctxAuthedUserGet(ctx))
 	if err != nil {
 		return nil, err
 	}

@@ -3,7 +3,9 @@ package api
 import (
 	"encoding/xml"
 	"errors"
+	"hash/fnv"
 	"os"
+	"strconv"
 	"time"
 
 	"github.com/djherbis/times"
@@ -29,11 +31,19 @@ func (f *davFile) DeadProps() (map[xml.Name]webdav.Property, error) {
 		return nil, err
 	}
 
+	h := fnv.New64a()
+	h.Write([]byte(f.Name()))
+	fileid := h.Sum64()
+
 	b := NewDeadPropBuilder()
-
 	b.DAV("creationdate", times.BirthTime().Format(time.RFC3339))
+	b.OC("permissions", "MGDNVWCK")
+	b.OC("owner-id", "~")
+	b.OC("owner-display-name", "~")
+	b.OC("id", strconv.Itoa(int(fileid)))
+	b.OC("fileid", strconv.Itoa(int(fileid)))
+	b.OC("size", strconv.Itoa(int(stat.Size())))
 
-	_ = stat
 	return b.Build(), nil
 }
 

@@ -39,9 +39,9 @@ type Mount struct {
 	UserLocal bool `toml:"user-local"`
 }
 
-func (m Mounts) Real(path, user string) (string, error) {
+func (m Mounts) Real(path, user string) (string, Mount, error) {
 	if path == "" {
-		return "", os.ErrNotExist
+		return "", Mount{}, os.ErrNotExist
 	}
 	path = filepath.Clean(path)
 	if !strings.HasPrefix(path, "/") {
@@ -62,16 +62,16 @@ func (m Mounts) Real(path, user string) (string, error) {
 		base := mount.Real
 		if mount.UserLocal {
 			if user == "" {
-				return "", os.ErrNotExist
+				return "", Mount{}, os.ErrNotExist
 			}
 			base = filepath.Join(base, user)
 		}
 
 		rest := strings.Join(parts[i:], "/")
 		if rest == "" {
-			return base, nil
+			return base, mount, nil
 		}
-		return filepath.Join(base, rest), nil
+		return filepath.Join(base, rest), mount, nil
 	}
-	return "", os.ErrNotExist
+	return "", Mount{}, os.ErrNotExist
 }

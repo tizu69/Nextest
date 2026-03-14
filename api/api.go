@@ -32,6 +32,8 @@ func (a *API) Routes() http.Handler {
 	mux.Get("/status.php", a.RouteGetStatus)
 	mux.HandleFunc("/remote.php/dav", a.RouteWebDAV)
 	mux.HandleFunc("/remote.php/dav/*", a.RouteWebDAV)
+	mux.HandleFunc("/remote.php/webdav", a.RouteWebDAV)
+	mux.HandleFunc("/remote.php/webdav/*", a.RouteWebDAV)
 	mux.Post("/index.php/login/v2", a.RouteLogin)
 	mux.Get("/index.php/login/v2/{token}", a.RouteLoginFlow)
 	mux.Post("/index.php/login/v2/{token}", a.RouteLoginFlowTry)

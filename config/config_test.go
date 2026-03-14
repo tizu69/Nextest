@@ -43,7 +43,7 @@ func TestMounts(t *testing.T) {
 	}
 
 	for _, c := range cases {
-		got, err := m.Real(c.Path, "__exampleuser__")
+		got, _, err := m.Real(c.Path, "__exampleuser__")
 		if err != nil {
 			t.Errorf("Translate(%q) (err) = %v; want %q", c.Path, err, c.Want)
 		} else if got != c.Want {
