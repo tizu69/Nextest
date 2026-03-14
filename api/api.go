@@ -17,11 +17,6 @@ type API struct {
 
 func NewAPI(cfg *config.Config) *API {
 	a := &API{Config: cfg}
-	a.dav = &webdav.Handler{
-		Prefix:     "/remote.php/dav/files/~",
-		FileSystem: NewDavFS(a.Config),
-		LockSystem: webdav.NewMemLS(),
-	}
 	a.pendAuth = newPendAuth()
 	return a
 }
